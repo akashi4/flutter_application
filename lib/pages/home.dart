@@ -58,11 +58,39 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-          )),
+          )
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){},
+        child: Icon(Icons.play_arrow),
+        backgroundColor: Colors.lightGreen.shade100,
+      ),
+      bottomNavigationBar: const bottomNavBarWidget(),
     );
   }
 }
+class bottomNavBarWidget extends StatelessWidget{
+  const bottomNavBarWidget({
+    Key key,
+}): super(key: key);
 
+  Widget build(BuildContext context){
+    return BottomAppBar(
+     // hasNotch: true,
+      color: Colors.lightGreen.shade100,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          Icon(Icons.pause),
+          Icon(Icons.stop),
+          Icon(Icons.access_time),
+          Padding(padding: EdgeInsets.all(35))
+        ],
+      ),
+    );
+  }
+}
 class ContainerWithBoxDecorationWidget extends StatelessWidget {
   const ContainerWithBoxDecorationWidget({
     Key key,
