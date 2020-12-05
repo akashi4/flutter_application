@@ -47,14 +47,31 @@ class _HomeState extends State<Home> {
           child: SafeArea(
             child: SingleChildScrollView(
               child: Column(
-                children: <Widget>[
-                  const ContainerWithBoxDecorationWidget(),
-                  Divider(),
-                  const ColumnWidget(),
-                  Divider(),
-                  const RowWidget(),
-                  Divider(),
-                  const ColumnAndRowNestingWidget(),
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      FlatButton(onPressed: null, child: Text('Flag')),
+                      FlatButton(onPressed: null, child: Icon(Icons.flag),color: Colors.lightGreen, textColor: Colors.white,),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      RaisedButton(onPressed: null,child: Text('Save'),),
+                      Padding(padding: EdgeInsets.all(10)),
+                      RaisedButton(onPressed: null,child: Icon(Icons.save), color: Colors.lightGreen,)
+                      //Button()
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      IconButton(icon: Icon(Icons.flight), onPressed: null),
+                      Padding(padding: EdgeInsets.all(10),),
+                      IconButton(icon: Icon(Icons.flight), onPressed: null, iconSize: 42.0,color: Colors.white, tooltip: 'Flight',),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -70,6 +87,7 @@ class _HomeState extends State<Home> {
     );
   }
 }
+
 class bottomNavBarWidget extends StatelessWidget{
   const bottomNavBarWidget({
     Key key,
@@ -91,131 +109,4 @@ class bottomNavBarWidget extends StatelessWidget{
     );
   }
 }
-class ContainerWithBoxDecorationWidget extends StatelessWidget {
-  const ContainerWithBoxDecorationWidget({
-    Key key,
-  }) : super(key: key);
 
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Container(
-          height: 100,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(100.0),
-                bottomRight: Radius.circular(10.0),
-              ),
-              gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.white,
-                    Colors.lightGreen.shade500,
-                  ]),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.grey, blurRadius: 10, offset: Offset(0, 10))
-              ]),
-          child: Center(
-            child: RichText(
-              text: TextSpan(
-                  text: 'Flutter World',
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    color: Colors.deepPurple,
-                    decoration: TextDecoration.underline,
-                    decorationColor: Colors.deepPurpleAccent,
-                    decorationStyle: TextDecorationStyle.dotted,
-                    fontWeight: FontWeight.normal,
-                  ),
-                  children: <TextSpan>[
-                    TextSpan(
-                      text: ' for',
-                    ),
-                    TextSpan(
-                        text: ' Mobile',
-                        style: TextStyle(
-                          color: Colors.deepOrange,
-                          fontWeight: FontWeight.bold,
-                        ))
-                  ]),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class ColumnWidget extends StatelessWidget {
-  const ColumnWidget({
-    Key key,
-  }) : super(key: key);
-
-  Widget build(BuildContext context) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Text('Column 1'),
-          Divider(),
-          Text('Column 2'),
-          Divider(),
-          Text('Column 3'),
-        ]);
-  }
-}
-
-class RowWidget extends StatelessWidget {
-  const RowWidget({
-    Key key,
-  }) : super(key: key);
-
-  Widget build(BuildContext context){
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Text('Row 1'),
-            Padding(padding: EdgeInsets.all(16.0)),
-            Text('Row 2'),
-            Padding(padding: EdgeInsets.all(16.0),),
-            Text('Row 3'),
-          ],
-        )
-      ],
-    );
-  }
-}
-
-class ColumnAndRowNestingWidget extends StatelessWidget{
-  const ColumnAndRowNestingWidget({
-    Key key,
-}): super(key: key);
-
-  Widget build(BuildContext context){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-        Text('Column and Row Nesting 1'),
-        Text('Columns and Row Nesting 2'),
-        Text('Columns and Row Nesting 3'),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Text('Row Nesting 1'),
-            Text('Row Nesting 2'),
-            Text('Row Nesting 3'),
-          ],
-        )
-      ],
-    );
-  }
-}
