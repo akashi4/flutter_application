@@ -7,6 +7,29 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  final GlobalKey<FormState> _formStateKey = GlobalKey<FormState>();
+
+  Order _order = Order();
+
+  String _validateRequired(String value){
+    return value.isEmpty? 'Item Required' : null;
+  }
+
+  String _validateItemcount (String value){
+    //check if the value is not null and convert to integer
+
+    int _valueAsInteger = value.isEmpty? 0 : int.tryParse(value);
+    return _valueAsInteger == 0? 'At least one item is required' : null;
+  }
+  void _submitOrder(){
+    if (_formStateKey.currentState.validate()){
+      _formStateKey.currentState.save();
+      print('Order Item: ${_order.item}');
+      print('Order Quantity: ${_order.quantity}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,24 +38,50 @@ class _HomeState extends State<Home> {
         //bottom: PopupMenuButtonWidget(),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const ImagesAndIconWidget(),
-                  Divider(),
-                  const BoxDecorationWidget(),
-                  Divider(),
-                  const InputDecoratorsWidget(),
-                ],
-              )),
-        ),
+        child: Column(
+          children: [
+            Form(
+              key: _formStateKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      decoration: InputDecoration(
+                        hintText: 'Espresso',
+                        labelText: 'Item',
+                      ),
+                      onSaved: (value) => _order.item = value,
+                      validator: (value) => _validateRequired(value),
+                    ),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        hintText: '3',
+                        labelText: 'Quantity',
+                      ),
+                      onSaved: (value) => _order.quantity = int.tryParse(value),
+                      validator: (value) => _validateItemcount(value),
+
+                    ),
+                    Divider(height: 32.0,),
+                    FlatButton(onPressed: () => _submitOrder(), child: Text('Save'), color: Colors.lightBlue,)
+                  ],
+                ),
+              ),
+            )
+          ],
+        )
       ),
     );
   }
 }
 
+class Order{
+  String item;
+  int quantity;
+
+}
 class InputDecoratorsWidget extends StatelessWidget {
   const InputDecoratorsWidget({Key key}) : super(key: key);
 
