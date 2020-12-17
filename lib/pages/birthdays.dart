@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class Gratitude extends StatelessWidget {
+class Birthdays extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: Icon(
-            Icons.sentiment_satisfied,
+            Icons.cake,
             size: 120.0,
-            color: Colors.lightGreen,
+            color: Colors.orange,
           ),
         ),
       ),
