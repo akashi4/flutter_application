@@ -28,7 +28,7 @@ class LeftDrawerWidget extends StatelessWidget {
             ],
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/Naruto kick.png'),
+                image: AssetImage('assets/images/naruto_kick.png'),
                 fit: BoxFit.cover
               )
             ),
