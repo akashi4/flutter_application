@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutterapplication/widgets/stack.dart';
-import 'package:flutterapplication/widgets/stack_favorite.dart';
+import 'package:flutterapplication/widgets/sliver_app_bar.dart';
+import 'package:flutterapplication/widgets/sliver_list.dart';
+import 'package:flutterapplication/widgets/sliver_grid.dart';
+
 
 class Home extends StatefulWidget {
   @override
@@ -12,21 +14,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Stack"),
+        title: Text("CustomScrollView - Slivers"),
+        elevation: 0.0,
          ),
-      body: SafeArea(
-        child: ListView.builder(
-          itemCount: 7,
-            itemBuilder: (BuildContext context, int index){
-              if (index.isEven){
-                return const StackWidget();
-              }
-              else{
-                return const StackFavoriteWidget();
-              }
-            }
-        ),
-      ),
+      body:CustomScrollView(
+        slivers: [
+          const SliverAppBarWidget(),
+          const SliverListWidget(),
+          const SliverGridWidget(),
+        ],
+      )
     );
   }
 }
