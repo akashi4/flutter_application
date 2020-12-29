@@ -1,172 +1,140 @@
 import 'package:flutter/material.dart';
 
-
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
-  @override
+
+ String _gestureDetected;
+ Color _paintedColor;
+
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Layouts',
+          'Gesture Detector',
           style: TextStyle(color: Colors.black87),
         ),
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(color: Colors.black54),
         brightness: Brightness.light,
-        leading: IconButton(icon: Icon(Icons.menu), onPressed: (){}),
-        actions: <Widget>[
-          IconButton(icon: Icon(Icons.cloud_queue),onPressed: (){},),
-        ],
-         ),
-      body: _buildBody(),
-    );
-  }
-
-  _buildBody(){
-    return SingleChildScrollView(
-      child: Column(
-        children: <Widget>[
-          _buildJournalHeaderImage(),
-          SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    _buildJournalEntry(),
-                    Divider(),
-                    _buildJournalWeather(),
-                    Divider(),
-                    _buildJournalTags(),
-                    Divider(),
-                    _buildJournalFooterImages()
-                  ],
-                ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              _buildGestureDetector(),
+              Divider(color: Colors.black, height: 44.0),
+             _buildDraggable(),
+              Divider(
+                height: 44.0,
+              ),
+              _buildDragTarget(),
+              Divider(
+                color: Colors.black,
               )
-          )
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  _buildJournalHeaderImage(){
-    return Image(
-      fit: BoxFit.cover,
-      image: AssetImage('assets/images/moon.png'),
-    );
-  }
-
-  _buildJournalEntry(){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'My BirthDay',
-          style: TextStyle(
-            fontSize: 32.0,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Divider(),
-        Text(" It's going to be a great birthday. We are going out for dinner at my "
-            " favorite place, then watch a movie after we go to the gelateria for ice cream"
-            "and espresso",
-        style: TextStyle(color: Colors.black54),
-        )
-      ],
-    );
-  }
-
-  _buildJournalWeather(){
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.wb_sunny,color: Colors.orange,),
-          ],
-        ),
-        SizedBox(width: 16.0,),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  '81º clear',
-                  style: TextStyle(color: Colors.grey),
-                )
-              ],
-            ),
-            Row(
-              children: [
-                Text(
-                  '4500, San Alpho Drive, Dallas, TX United States',
-                  style: TextStyle(color: Colors.grey),
-                )
-              ],
-            )
-          ],
-        )
-      ],
-    );
-  }
-
-  _buildJournalTags(){
-    return Wrap(
-      spacing: 8.0,
-      children: List.generate(7, (index) {
-        return Chip(
-          label: Text(
-            'Gift ${index + 1}',
-            style: TextStyle(fontSize: 10.0),
-          ),
-          avatar: Icon(Icons.card_giftcard, color: Colors.blue.shade300,),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4.0),
-            side: BorderSide(color: Colors.grey),
-          ),
-          backgroundColor: Colors.grey.shade100,
-        );
+  GestureDetector _buildGestureDetector() {
+    return GestureDetector(
+      onTap: () {
+        print('onTap');
+        _displayGestureDetected('onTap');
+      },
+      onDoubleTap: () {
+        print('OnTap');
+        _displayGestureDetected('onDoubleTap');
+      },
+      onLongPress: () {
+        print('OnLongPress');
+        _displayGestureDetected('onLongPress');
+      },
+      /*onPanUpdate: (DragUpdateDetails details) {
+        print('OnPanUpdate: $details');
+        _displayGestureDetected('onPanUpdate:\n$details');
+      },*/
+      onVerticalDragUpdate: ((DragUpdateDetails details) {
+        print('onVerticalDragUpdate: $details');
+        _displayGestureDetected('onVerticalDragUpdate:\n$details');
       }),
+      onHorizontalDragUpdate: (DragUpdateDetails details) {
+        print('onHorizontalDragUpdate: $details');
+        _displayGestureDetected('onHorizontalDragUpdate:\n$details');
+      },
+      onHorizontalDragEnd: (DragEndDetails details) {
+        print('onHorizontalDragEnd: $details');
+        if (details.primaryVelocity < 0) {
+          print('Dragging right to Left: ${details.velocity}');
+        } else if (details.primaryVelocity > 0) {
+          print('Dragging Left to right: ${details.velocity}');
+        }
+      },
+      child: Container(
+        color: Colors.lightGreen.shade100,
+        width: double.infinity,
+        padding: EdgeInsets.all(24.0),
+        child: Column(
+          children: <Widget>[
+            Icon(Icons.access_alarm,size: 98.0,),
+            Text('$_gestureDetected'),
+          ],
+        ),
+      ),
     );
   }
 
-  _buildJournalFooterImages(){
+  void _displayGestureDetected(String gesture) {
+    setState(() {
+      _gestureDetected = gesture;
+    });
+  }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        CircleAvatar(
-          radius: 40.0,
-          backgroundImage: AssetImage("assets/images/hands.png"),
+  Draggable<int> _buildDraggable(){
+    return Draggable(
+        child: Column(
+          children: <Widget>[
+            Icon(Icons.palette, color: Colors.deepOrange, size: 48.0,),
+            Text('Drag Me below to change color')
+          ],
         ),
-        CircleAvatar(
-          radius: 40.0,
-          backgroundImage: AssetImage("assets/images/SNK.png"),
+        childWhenDragging: Icon(
+          Icons.palette,
+          color: Colors.grey,
+          size: 48.0,
         ),
-        CircleAvatar(
-          radius: 40.0,
-          backgroundImage: AssetImage("assets/images/Naruto.png"),
+        feedback: Icon(
+          Icons.brush,
+          color: Colors.deepOrange,
+          size: 80.0,
         ),
-        SizedBox(
-          width: 100.0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Icon(Icons.cake),
-              Icon(Icons.star_border),
-              Icon(Icons.music_note),
-            ],
-          ),
-        )
-      ],
+      data: Colors.deepOrange.value,
     );
+  }
+
+  DragTarget<int> _buildDragTarget(){
+   return DragTarget<int>(
+       onAccept: (colorValue) {
+         _paintedColor = Color(colorValue);
+       },
+       builder: (BuildContext context, List<dynamic> acceptedData, List<dynamic> rejectable) => acceptedData.isEmpty
+       ?Text(
+         'Drag To see color change',
+         style: TextStyle(color: _paintedColor),
+       )
+           :Text(
+         'painting Color: $acceptedData',
+         style: TextStyle(color: Color(acceptedData[0]),
+         fontWeight: FontWeight.bold
+         ),
+       )
+   );
   }
 }
