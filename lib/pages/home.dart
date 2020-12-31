@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -7,10 +8,14 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
 
- String _gestureDetected;
- Color _paintedColor;
+  Offset _startLastOffset = Offset.zero;
+  Offset _lastOffset = Offset.zero;
+  Offset _currentOffset = Offset.zero;
+  double _lastScale = 1.0;
+  double _currentScale = 1.0;
 
- @override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -22,119 +27,201 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         iconTheme: IconThemeData(color: Colors.black54),
         brightness: Brightness.light,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              _buildGestureDetector(),
-              Divider(color: Colors.black, height: 44.0),
-             _buildDraggable(),
-              Divider(
-                height: 44.0,
-              ),
-              _buildDragTarget(),
-              Divider(
-                color: Colors.black,
-              )
-            ],
+      body: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return GestureDetector(
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          //_transformScaleAndTranslate(),
+          _transformMatrix4(),
+          _positionedInkWellAndInkResponse(context),
+          _positionedStatusBar(context),
+        ],
+      ),
+      onScaleStart: _onScaleStart,
+      onScaleUpdate: _onScaleUpdate,
+      onDoubleTap: _onDoubleTap,
+      onLongPress: _onLongPress,
+    );
+  }
+
+  Transform _transformScaleAndTranslate() {
+    return Transform.scale(
+        child: Transform.translate(
+          offset: _currentOffset,
+          child: Image(
+            image: AssetImage('assets/images/moon.png'),
           ),
         ),
+        scale: _currentScale
+    );
+  }
+
+  Transform _transformMatrix4() {
+    return Transform(
+      transform: Matrix4.identity()
+        ..scale(_currentScale, _currentScale)
+        ..translate(_currentOffset.dx, _currentOffset.dy),
+      alignment: FractionalOffset.center,
+      child: Image(
+        image: AssetImage('assets/images/Naruto.png'),
       ),
     );
   }
 
-  GestureDetector _buildGestureDetector() {
-    return GestureDetector(
-      onTap: () {
-        print('onTap');
-        _displayGestureDetected('onTap');
-      },
-      onDoubleTap: () {
-        print('OnTap');
-        _displayGestureDetected('onDoubleTap');
-      },
-      onLongPress: () {
-        print('OnLongPress');
-        _displayGestureDetected('onLongPress');
-      },
-      /*onPanUpdate: (DragUpdateDetails details) {
-        print('OnPanUpdate: $details');
-        _displayGestureDetected('onPanUpdate:\n$details');
-      },*/
-      onVerticalDragUpdate: ((DragUpdateDetails details) {
-        print('onVerticalDragUpdate: $details');
-        _displayGestureDetected('onVerticalDragUpdate:\n$details');
-      }),
-      onHorizontalDragUpdate: (DragUpdateDetails details) {
-        print('onHorizontalDragUpdate: $details');
-        _displayGestureDetected('onHorizontalDragUpdate:\n$details');
-      },
-      onHorizontalDragEnd: (DragEndDetails details) {
-        print('onHorizontalDragEnd: $details');
-        if (details.primaryVelocity < 0) {
-          print('Dragging right to Left: ${details.velocity}');
-        } else if (details.primaryVelocity > 0) {
-          print('Dragging Left to right: ${details.velocity}');
-        }
-      },
+  Positioned _positionedStatusBar(BuildContext context) {
+    return Positioned(
+      top: 0.0,
+      width: MediaQuery
+          .of(context)
+          .size
+          .width,
       child: Container(
-        color: Colors.lightGreen.shade100,
-        width: double.infinity,
-        padding: EdgeInsets.all(24.0),
-        child: Column(
+        color: Colors.white54,
+        height: 50.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            Icon(Icons.access_alarm,size: 98.0,),
-            Text('$_gestureDetected'),
+            Text('Scale: ${_currentScale.toStringAsFixed(4)}'),
+            Text('Current: $_currentOffset')
           ],
         ),
       ),
     );
   }
 
-  void _displayGestureDetected(String gesture) {
+  _positionedInkWellAndInkResponse(BuildContext context){
+    return Positioned(
+      top:50.0,
+      width: MediaQuery.of(context).size.width,
+      child: Container(
+        color: Colors.white54,
+        height: 56.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            InkWell(
+              child: Container(
+                height: 48.0,
+                width: 128.0,
+                color: Colors.black12,
+                child: Icon(
+                  Icons.touch_app,
+                  size: 32.0,
+                ),
+              ),
+              splashColor: Colors.lightGreenAccent,
+              onTap: _setScaleSmall,
+              onDoubleTap: _setScaleBig,
+              onLongPress: _onLongPress,
+            ),
+            InkResponse(
+              child: Container(
+                height: 48.0,
+                width: 128.0,
+                color: Colors.black12,
+                child: Icon(Icons.touch_app,size: 32.0,),
+              ),
+              splashColor: Colors.lightGreenAccent,
+              highlightColor: Colors.lightBlueAccent,
+              onTap: _setScaleSmall,
+              onDoubleTap: _setScaleBig,
+              onLongPress: _onLongPress,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _setScaleSmall(){
     setState(() {
-      _gestureDetected = gesture;
+      _currentScale = 0.5;
     });
   }
 
-  Draggable<int> _buildDraggable(){
-    return Draggable(
-        child: Column(
-          children: <Widget>[
-            Icon(Icons.palette, color: Colors.deepOrange, size: 48.0,),
-            Text('Drag Me below to change color')
-          ],
-        ),
-        childWhenDragging: Icon(
-          Icons.palette,
-          color: Colors.grey,
-          size: 48.0,
-        ),
-        feedback: Icon(
-          Icons.brush,
-          color: Colors.deepOrange,
-          size: 80.0,
-        ),
-      data: Colors.deepOrange.value,
-    );
+  void _setScaleBig(){
+    setState(() {
+      _currentScale = 16.0;
+    });
+  }
+  //TODO translation isn't working
+  void _onScaleStart(ScaleStartDetails details) {
+    print('ScaleStartDetails: $details');
+
+    _startLastOffset = details.focalPoint;
+    _lastOffset = _currentOffset;
+    _lastScale = _currentScale;
   }
 
-  DragTarget<int> _buildDragTarget(){
-   return DragTarget<int>(
-       onAccept: (colorValue) {
-         _paintedColor = Color(colorValue);
-       },
-       builder: (BuildContext context, List<dynamic> acceptedData, List<dynamic> rejectable) => acceptedData.isEmpty
-       ?Text(
-         'Drag To see color change',
-         style: TextStyle(color: _paintedColor),
-       )
-           :Text(
-         'painting Color: $acceptedData',
-         style: TextStyle(color: Color(acceptedData[0]),
-         fontWeight: FontWeight.bold
-         ),
-       )
-   );
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    print('ScaleUpdateDetails: $details - Scale: ${details.scale}');
+
+    if (details.scale != 1.0) {
+      //Scalling
+      double currentScale = _lastScale * details.scale;
+      if (currentScale < 0.5) {
+        _currentScale = 0.5;
+      }
+      setState(() {
+        _currentScale = currentScale;
+      });
+      print('_scale: $_currentScale -  _lastScale: $_lastScale');
+    } else if (details.scale == 1.0) {
+      //We are not scalling but dragging around screen
+      //Calculate offset depending on current Image Scaling.
+
+      Offset offsetAdjustedForScale = (_startLastOffset - _lastOffset) /
+          _lastScale;
+      Offset currentOffset = details.focalPoint - (offsetAdjustedForScale *
+          _currentScale);
+      setState(() {
+        _currentOffset = _currentOffset;
+      });
+      print(
+          'offsetAjustedForscale: $offsetAdjustedForScale - _currentOffset:'
+              ' $_currentOffset');
+    }
   }
+
+  void _onDoubleTap() {
+    print('onDoubleTap');
+    //Calculate current scale and populate the _lastScale with currentScale
+    // if currentScale is greater than 16 times the original image, reset scale to default, 1.0
+    //TODO voir pourquoi il faut deux onTap avant changement
+    double currentScale = _lastScale * 2.0;
+    if (_currentScale > 16.0) {
+      currentScale = 1.0;
+      _resetToDefaultValues();
+    }
+    setState(() {
+      _currentScale = currentScale;
+    });
+    _lastScale = _currentScale;
+
+    print('$_currentScale');
+    print('$currentScale');
+  }
+
+  void _onLongPress() {
+    print('onLongPressed');
+
+    setState(() {
+      _resetToDefaultValues();
+    });
+  }
+
+  void _resetToDefaultValues() {
+    _startLastOffset = Offset.zero;
+    _lastOffset = Offset.zero;
+    _currentOffset = Offset.zero;
+    _lastScale = 1.0;
+    _currentScale = 1.0;
+  }
+
 }
+
