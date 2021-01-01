@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterapplication/classes/Trip.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -7,13 +8,24 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
+  List _trips = List<Trip>();
 
-  Offset _startLastOffset = Offset.zero;
-  Offset _lastOffset = Offset.zero;
-  Offset _currentOffset = Offset.zero;
-  double _lastScale = 1.0;
-  double _currentScale = 1.0;
-
+  @override
+  void initState() {
+    _trips
+      ..add(Trip(id: '0', tripName: 'Rome', tripLocation: 'Italy'))
+      ..add(Trip(id: '1', tripName: 'Paris', tripLocation: 'France'))
+      ..add(Trip(id: '2', tripName: 'New York', tripLocation: 'USA - New York'))
+      ..add(Trip(id: '3', tripName: 'Cacun', tripLocation: 'Mexico'))
+      ..add(Trip(id: '4', tripName: 'London', tripLocation: 'England'))
+      ..add(Trip(id: '5', tripName: 'Sydney', tripLocation: 'Australia'))
+      ..add(Trip(id: '6', tripName: 'Miami', tripLocation: 'USA - Florida'))
+      ..add(Trip(id: '7', tripName: 'Rio de Janeiro', tripLocation: 'Brazil'))
+      ..add(Trip(id: '8', tripName: 'Cusco', tripLocation: 'Peru'))
+      ..add(Trip(id: '9', tripName: 'New Delhi', tripLocation: 'India'))
+      ..add(Trip(id: '10', tripName: 'Tokyo', tripLocation: 'Japan'));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,201 +39,74 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         iconTheme: IconThemeData(color: Colors.black54),
         brightness: Brightness.light,
       ),
-      body: _buildBody(context),
+      body: ListView.builder(
+          itemCount: _trips.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Dismissible(
+              key: Key(_trips[index].id),
+              child: _buildListTile(index),
+              background: _buildCompleteTrip(),
+              secondaryBackground: _buildRemoveTrip(),
+              onDismissed: (DismissDirection direction){
+                direction == DismissDirection.startToEnd
+                    ? _markTripCompleted() : _deletedTrip();
+                setState(() {
+                  _trips.removeAt(index);
+                });
+              },
+            );
+          }),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
-    return GestureDetector(
-      child: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          //_transformScaleAndTranslate(),
-          _transformMatrix4(),
-          _positionedInkWellAndInkResponse(context),
-          _positionedStatusBar(context),
-        ],
-      ),
-      onScaleStart: _onScaleStart,
-      onScaleUpdate: _onScaleUpdate,
-      onDoubleTap: _onDoubleTap,
-      onLongPress: _onLongPress,
+  void _markTripCompleted() {
+    //mark trip compeleted in database or web service
+  }
+
+  void _deletedTrip() {
+    //delete trip from database or webservice
+  }
+
+  ListTile _buildListTile(int index){
+    return ListTile(
+      title: Text('${_trips[index].tripName}'),
+      subtitle: Text(_trips[index].tripLocation),
+      leading: Icon(Icons.flight),
+      trailing: Icon(Icons.fastfood),
     );
   }
 
-  Transform _transformScaleAndTranslate() {
-    return Transform.scale(
-        child: Transform.translate(
-          offset: _currentOffset,
-          child: Image(
-            image: AssetImage('assets/images/moon.png'),
-          ),
-        ),
-        scale: _currentScale
-    );
-  }
-
-  Transform _transformMatrix4() {
-    return Transform(
-      transform: Matrix4.identity()
-        ..scale(_currentScale, _currentScale)
-        ..translate(_currentOffset.dx, _currentOffset.dy),
-      alignment: FractionalOffset.center,
-      child: Image(
-        image: AssetImage('assets/images/Naruto.png'),
-      ),
-    );
-  }
-
-  Positioned _positionedStatusBar(BuildContext context) {
-    return Positioned(
-      top: 0.0,
-      width: MediaQuery
-          .of(context)
-          .size
-          .width,
-      child: Container(
-        color: Colors.white54,
-        height: 50.0,
+  Container _buildCompleteTrip(){
+    return Container(
+      color: Colors.green,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            Text('Scale: ${_currentScale.toStringAsFixed(4)}'),
-            Text('Current: $_currentOffset')
-          ],
-        ),
-      ),
-    );
-  }
-
-  _positionedInkWellAndInkResponse(BuildContext context){
-    return Positioned(
-      top:50.0,
-      width: MediaQuery.of(context).size.width,
-      child: Container(
-        color: Colors.white54,
-        height: 56.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            InkWell(
-              child: Container(
-                height: 48.0,
-                width: 128.0,
-                color: Colors.black12,
-                child: Icon(
-                  Icons.touch_app,
-                  size: 32.0,
-                ),
-              ),
-              splashColor: Colors.lightGreenAccent,
-              onTap: _setScaleSmall,
-              onDoubleTap: _setScaleBig,
-              onLongPress: _onLongPress,
-            ),
-            InkResponse(
-              child: Container(
-                height: 48.0,
-                width: 128.0,
-                color: Colors.black12,
-                child: Icon(Icons.touch_app,size: 32.0,),
-              ),
-              splashColor: Colors.lightGreenAccent,
-              highlightColor: Colors.lightBlueAccent,
-              onTap: _setScaleSmall,
-              onDoubleTap: _setScaleBig,
-              onLongPress: _onLongPress,
+            Icon(
+              Icons.done,
+              color: Colors.white
             )
           ],
         ),
       ),
     );
+
   }
 
-  void _setScaleSmall(){
-    setState(() {
-      _currentScale = 0.5;
-    });
+  Container _buildRemoveTrip(){
+    return Container(
+      color: Colors.red,
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Icon(Icons.delete,color: Colors.white,)
+          ],
+        ),
+      ),
+    );
   }
-
-  void _setScaleBig(){
-    setState(() {
-      _currentScale = 16.0;
-    });
-  }
-  //TODO translation isn't working
-  void _onScaleStart(ScaleStartDetails details) {
-    print('ScaleStartDetails: $details');
-
-    _startLastOffset = details.focalPoint;
-    _lastOffset = _currentOffset;
-    _lastScale = _currentScale;
-  }
-
-  void _onScaleUpdate(ScaleUpdateDetails details) {
-    print('ScaleUpdateDetails: $details - Scale: ${details.scale}');
-
-    if (details.scale != 1.0) {
-      //Scalling
-      double currentScale = _lastScale * details.scale;
-      if (currentScale < 0.5) {
-        _currentScale = 0.5;
-      }
-      setState(() {
-        _currentScale = currentScale;
-      });
-      print('_scale: $_currentScale -  _lastScale: $_lastScale');
-    } else if (details.scale == 1.0) {
-      //We are not scalling but dragging around screen
-      //Calculate offset depending on current Image Scaling.
-
-      Offset offsetAdjustedForScale = (_startLastOffset - _lastOffset) /
-          _lastScale;
-      Offset currentOffset = details.focalPoint - (offsetAdjustedForScale *
-          _currentScale);
-      setState(() {
-        _currentOffset = _currentOffset;
-      });
-      print(
-          'offsetAjustedForscale: $offsetAdjustedForScale - _currentOffset:'
-              ' $_currentOffset');
-    }
-  }
-
-  void _onDoubleTap() {
-    print('onDoubleTap');
-    //Calculate current scale and populate the _lastScale with currentScale
-    // if currentScale is greater than 16 times the original image, reset scale to default, 1.0
-    //TODO voir pourquoi il faut deux onTap avant changement
-    double currentScale = _lastScale * 2.0;
-    if (_currentScale > 16.0) {
-      currentScale = 1.0;
-      _resetToDefaultValues();
-    }
-    setState(() {
-      _currentScale = currentScale;
-    });
-    _lastScale = _currentScale;
-
-    print('$_currentScale');
-    print('$currentScale');
-  }
-
-  void _onLongPress() {
-    print('onLongPressed');
-
-    setState(() {
-      _resetToDefaultValues();
-    });
-  }
-
-  void _resetToDefaultValues() {
-    _startLastOffset = Offset.zero;
-    _lastOffset = Offset.zero;
-    _currentOffset = Offset.zero;
-    _lastScale = 1.0;
-    _currentScale = 1.0;
-  }
-
 }
-
