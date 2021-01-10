@@ -1,6 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterapplication/classes/Trip.dart';
+import 'package:flutterapplication/pages/edit_entry.dart';
+import 'package:flutterapplication/classes/Database.dart';
+import 'package:intl/intl.dart'; //format Dates
 
 class Home extends StatefulWidget {
   @override
@@ -8,104 +9,154 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
-  List _trips = List<Trip>();
+  Database _database;
 
-  @override
-  void initState() {
-    _trips
-      ..add(Trip(id: '0', tripName: 'Rome', tripLocation: 'Italy'))
-      ..add(Trip(id: '1', tripName: 'Paris', tripLocation: 'France'))
-      ..add(Trip(id: '2', tripName: 'New York', tripLocation: 'USA - New York'))
-      ..add(Trip(id: '3', tripName: 'Cacun', tripLocation: 'Mexico'))
-      ..add(Trip(id: '4', tripName: 'London', tripLocation: 'England'))
-      ..add(Trip(id: '5', tripName: 'Sydney', tripLocation: 'Australia'))
-      ..add(Trip(id: '6', tripName: 'Miami', tripLocation: 'USA - Florida'))
-      ..add(Trip(id: '7', tripName: 'Rio de Janeiro', tripLocation: 'Brazil'))
-      ..add(Trip(id: '8', tripName: 'Cusco', tripLocation: 'Peru'))
-      ..add(Trip(id: '9', tripName: 'New Delhi', tripLocation: 'India'))
-      ..add(Trip(id: '10', tripName: 'Tokyo', tripLocation: 'Japan'));
-    super.initState();
+  Future<List<Journal>> _loadJournals() async {
+
+    _database = Database(journal:<Journal>[]);
+     await DatabaseFileRoutines().readJournals().then((journalsJson) {
+      _database = DatabaseFileRoutines().databaseFromJson(journalsJson);
+      _database.journal
+          .sort((comp1, comp2) => comp2.date.compareTo(comp1.date));
+    });
+
+    return _database.journal;
+  }
+
+  void _addOrEditJournal({bool add, int index, Journal journal}) async {
+    JournalEdit _journalEdit = JournalEdit(action: '', journal: journal);
+
+    _journalEdit = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditEntry(
+            add: add,
+            index: index,
+            journalEdit: _journalEdit,
+          ),
+          fullscreenDialog: true,
+        ));
+    switch (_journalEdit.action) {
+      case 'Save':
+        if (add) {
+          setState(() {
+            _database.journal.add(_journalEdit.journal);
+          });
+        } else {
+          setState(() {
+            _database.journal[index] = _journalEdit.journal;
+          });
+        }
+        DatabaseFileRoutines()
+            .writeJournals(DatabaseFileRoutines().databaseToJson(_database));
+        break;
+      case 'Cancel':
+        break;
+      default:
+        break;
+    }
+  }
+
+  Widget _buildListViewSeparated(AsyncSnapshot snapshot) {
+    return ListView.separated(
+      itemBuilder: (BuildContext context, int index) {
+        String _titleDate = DateFormat.yMMMEd()
+            .format(DateTime.parse(snapshot.data[index].date));
+        String _subtitle =
+            snapshot.data[index].mood + "\n" + snapshot.data[index].note;
+        return Dismissible(
+          key: Key(snapshot.data[index].id),
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.only(left: 16.0),
+            child: Icon(
+              Icons.delete,
+              color: Colors.white,
+            ),
+          ),
+          secondaryBackground: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: EdgeInsets.only(right: 16.0),
+            child: Icon(
+              Icons.delete,
+              color: Colors.white,
+            ),
+          ),
+          child: ListTile(
+            leading: Column(
+              children: [
+                Text(
+                    DateFormat.d()
+                        .format(DateTime.parse(snapshot.data[index].date)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 32.0,
+                      color: Colors.blue,
+                    )),
+                Text(DateFormat.E()
+                    .format(DateTime.parse(snapshot.data[index].date))),
+              ],
+            ),
+            title: Text(
+              _titleDate,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(_subtitle),
+            onTap: () {
+              _addOrEditJournal(
+                  add: false, index: index, journal: snapshot.data[index]);
+            },
+          ),
+          onDismissed: (direction) {
+            setState(() {
+              _database.journal.removeAt(index);
+            });
+            DatabaseFileRoutines().writeJournals(
+                DatabaseFileRoutines().databaseToJson(_database));
+          },
+        );
+      },
+      separatorBuilder: (BuildContext context, int index) {
+        return Divider(
+          color: Colors.grey,
+        );
+      },
+      itemCount: snapshot.data.length,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Gesture Detector',
-          style: TextStyle(color: Colors.black87),
-        ),
-        backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.black54),
-        brightness: Brightness.light,
+        title: Text(''),
       ),
-      body: ListView.builder(
-          itemCount: _trips.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Dismissible(
-              key: Key(_trips[index].id),
-              child: _buildListTile(index),
-              background: _buildCompleteTrip(),
-              secondaryBackground: _buildRemoveTrip(),
-              onDismissed: (DismissDirection direction){
-                direction == DismissDirection.startToEnd
-                    ? _markTripCompleted() : _deletedTrip();
-                setState(() {
-                  _trips.removeAt(index);
-                });
-              },
-            );
-          }),
-    );
-  }
-
-  void _markTripCompleted() {
-    //mark trip compeleted in database or web service
-  }
-
-  void _deletedTrip() {
-    //delete trip from database or webservice
-  }
-
-  ListTile _buildListTile(int index){
-    return ListTile(
-      title: Text('${_trips[index].tripName}'),
-      subtitle: Text(_trips[index].tripLocation),
-      leading: Icon(Icons.flight),
-      trailing: Icon(Icons.fastfood),
-    );
-  }
-
-  Container _buildCompleteTrip(){
-    return Container(
-      color: Colors.green,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.done,
-              color: Colors.white
-            )
-          ],
+      body: FutureBuilder(
+        initialData: [],
+        future: _loadJournals(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          return !snapshot.hasData
+              ? Center(
+                  child: CircularProgressIndicator(),
+                )
+              :_buildListViewSeparated(snapshot);
+        },
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
         ),
       ),
-    );
-
-  }
-
-  Container _buildRemoveTrip(){
-    return Container(
-      color: Colors.red,
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Icon(Icons.delete,color: Colors.white,)
-          ],
-        ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        tooltip: "Add Journal Entry",
+        onPressed: () {
+          _addOrEditJournal(add: true, index: -1, journal: Journal());
+        },
       ),
     );
   }

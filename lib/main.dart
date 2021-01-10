@@ -8,9 +8,10 @@ class MyApp extends StatelessWidget{
   Widget build(BuildContext context){
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Starter Template',
+      title: 'Local Persistance',
       theme: ThemeData(
-        primarySwatch: Colors.lightGreen,
+        primarySwatch: Colors.blue,
+        bottomAppBarColor: Colors.blue,
       ),
         home: Home(),
     );
