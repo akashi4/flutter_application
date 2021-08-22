@@ -1,6 +1,6 @@
 # flutterapplication
 
-Second test
+This app keeps you informed about innovations in agriculture based on the website lepaysan.net.  
 
 ## Getting Started
 
